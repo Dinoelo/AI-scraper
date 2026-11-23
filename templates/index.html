@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KI Kleinanzeigen-Finder</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; background: #f4f4f9; }
+        .box { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input, textarea { width: 100%; padding: 10px; margin: 10px 0 20px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 25px; white-space: pre-wrap; background: #eef; padding: 15px; border-radius: 5px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>🔍 KI-Angebots-Scraper</h2>
+        <form method="POST">
+            <label><b>Webseiten-Link (Suchergebnisseite):</b></label>
+            <input type="url" name="url" placeholder="https://kleinanzeigen.de" required>
+
+            <label><b>Was genau suchst du? (Kriterien):</b></label>
+            <textarea name="kriterien" rows="3" placeholder="z.B. Grafikkarte unter 200 Euro, mindestens 12 GB RAM, kein Defekt" required></textarea>
+
+            <button type="submit">Jetzt mit KI durchsuchen</button>
+        </form>
+
+        {% if ergebnis %}
+        <div class="result">
+            <h3>Gefundene Treffer:</h3>
+            {{ ergebnis }}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
