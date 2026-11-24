@@ -12,12 +12,13 @@ def scrape_seite(url):
     browser = p.chromium.launch(headless=True)
     context = browser.new_context(
         user_agent=(
-            "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:130.0) Gecko/20100101"
-            " Firefox/130.0"
-        )
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            " (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+        ),
+        locale="de-DE",
     )
     page = context.new_page()
-    page.goto(url, timeout=30000)
+    page.goto(url, wait_until="domcontentloaded", timeout=30000)
     page.wait_for_timeout(3000)
 
     soup = BeautifulSoup(page.content(), "html.parser")
@@ -36,11 +37,20 @@ def index():
           ergebnis="Fehler: GEMINI_API_KEY ist auf dem Server nicht hinterlegt.",
       )
 
-    url = request.form.get("url")
-    kriterien = request.form.get("kriterien")
+    url = request.form.get("url", "").strip()
+    kriterien = request.form.get("kriterien", "").strip()
 
     try:
       seiten_text = scrape_seite(url)
+      if len(seiten_text) < 100:
+        return render_template(
+            "index.html",
+            ergebnis=(
+                "Die Webseite hat fast keinen Text geliefert (evtl."
+                f" Bot-Blockade). Inhalt: {seiten_text}"
+            ),
+        )
+
       prompt = f"""
             Du bist ein präziser Einkaufs-Assistent. Analysiere den folgenden Text einer Webseite mit Angeboten.
             Filtere ALLE Angebote heraus, die exakt diesen Kriterien entsprechen:
@@ -60,10 +70,12 @@ def index():
           json={"contents": [{"parts": [{"text": prompt}]}]},
           timeout=60,
       )
-      data = res.json()
       if res.status_code != 200:
-        ergebnis = f"Google-Fehler ({res.status_code}): {data}"
+        ergebnis = (
+            f"Google-Antwort (Status {res.status_code}): {res.text[:500]}"
+        )
       else:
+        data = res.json()
         ergebnis = data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as e:
       ergebnis = f"Fehler beim Auslesen: {str(e)}"
